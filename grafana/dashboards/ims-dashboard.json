@@ -1,0 +1,56 @@
+{
+  "dashboard": {
+    "title": "Zeotap IMS - Incident Management Dashboard",
+    "tags": ["ims", "incidents", "monitoring"],
+    "timezone": "browser",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Signal Ingestion Rate",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(ims_signals_ingested_total[1m])",
+            "legendFormat": "{{component_type}} - {{severity}}"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0}
+      },
+      {
+        "id": 2,
+        "title": "Active Incidents by State",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "ims_active_incidents",
+            "legendFormat": "{{state}} - {{severity}}"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0}
+      },
+      {
+        "id": 3,
+        "title": "Signal Buffer Size",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "ims_signal_buffer_size"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8}
+      },
+      {
+        "id": 4,
+        "title": "API Response Time (p95)",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, rate(ims_api_response_time_seconds_bucket[5m]))",
+            "legendFormat": "{{endpoint}}"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8}
+      }
+    ]
+  }
+}

@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./backend
+    container_name: ims-backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend/src:/app/src
+      - backend-data:/app
+    environment:
+      - PYTHONUNBUFFERED=1
+    networks:
+      - ims-network
+
+  frontend:
+    build: ./frontend
+    container_name: ims-frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    networks:
+      - ims-network
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: ims-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    networks:
+      - ims-network
+    depends_on:
+      - backend
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: ims-grafana
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_SECURITY_ADMIN_USER=admin
+    volumes:
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    networks:
+      - ims-network
+
+networks:
+  ims-network:
+    driver: bridge
+
+volumes:
+  backend-data:
+  prometheus-data:
+  grafana-data:
