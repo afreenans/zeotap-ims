@@ -1,79 +1,38 @@
-from prometheus_client import Counter, Gauge, Histogram, generate_latest, CONTENT_TYPE_LATEST
+from prometheus_client import Counter, Gauge, generate_latest, CONTENT_TYPE_LATEST, REGISTRY
 from fastapi import Response
-import time
 
-# Counters
-signals_ingested_total = Counter(
-    'ims_signals_ingested_total',
-    'Total number of signals ingested',
-    ['component_type', 'severity']
+# Clear any existing metrics
+REGISTRY._collector_to_names.clear()
+REGISTRY._names_to_collectors.clear()
+
+# Define metrics
+signals_total = Counter(
+    'ims_signals_total',
+    'Total signals ingested',
+    registry=REGISTRY
 )
 
-incidents_created_total = Counter(
-    'ims_incidents_created_total',
-    'Total number of incidents created',
-    ['severity', 'component_type']
+incidents_total = Counter(
+    'ims_incidents_total',
+    'Total incidents created',
+    registry=REGISTRY
 )
 
-state_transitions_total = Counter(
-    'ims_state_transitions_total',
-    'Total state transitions',
-    ['from_state', 'to_state']
+buffer_size = Gauge(
+    'ims_buffer_size',
+    'Current signal buffer size',
+    registry=REGISTRY
 )
 
-api_requests_total = Counter(
-    'ims_api_requests_total',
-    'Total API requests',
-    ['method', 'endpoint', 'status']
-)
-
-# Gauges
-active_incidents = Gauge(
+active_incidents_count = Gauge(
     'ims_active_incidents',
     'Number of active incidents',
-    ['state', 'severity']
+    registry=REGISTRY
 )
 
-signal_buffer_size = Gauge(
-    'ims_signal_buffer_size',
-    'Current size of signal buffer'
-)
-
-signal_processing_rate = Gauge(
-    'ims_signal_processing_rate',
-    'Signals processed per second'
-)
-
-# Histograms
-signal_processing_duration = Histogram(
-    'ims_signal_processing_duration_seconds',
-    'Time to process a signal',
-    buckets=[0.001, 0.005, 0.01, 0.05, 0.1, 0.5, 1.0]
-)
-
-api_response_time = Histogram(
-    'ims_api_response_time_seconds',
-    'API response time',
-    ['endpoint'],
-    buckets=[0.01, 0.05, 0.1, 0.25, 0.5, 1.0, 2.0]
-)
-
-
-def get_component_type(component_id: str) -> str:
-    """Extract component type from ID"""
-    if "RDBMS" in component_id:
-        return "rdbms"
-    elif "API" in component_id:
-        return "api"
-    elif "CACHE" in component_id:
-        return "cache"
-    elif "QUEUE" in component_id:
-        return "queue"
-    elif "NOSQL" in component_id:
-        return "nosql"
-    return "other"
-
-
-def metrics_endpoint():
-    """Prometheus metrics endpoint"""
-    return Response(generate_latest(), media_type=CONTENT_TYPE_LATEST)
+def get_metrics():
+    """Return Prometheus metrics"""
+    return Response(
+        generate_latest(REGISTRY),
+        media_type=CONTENT_TYPE_LATEST
+    )

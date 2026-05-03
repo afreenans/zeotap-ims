@@ -5,11 +5,6 @@ from contextlib import asynccontextmanager
 import asyncio
 import time
 from datetime import datetime
-from .metrics import (
-    api_requests_total,
-    api_response_time,
-    metrics_endpoint
-)
 
 signal_processor = None
 metrics_task = None
@@ -75,28 +70,6 @@ app = FastAPI(
         "email": "ims@zeotap.com"
     }
 )
-
-
-# Metrics middleware
-@app.middleware("http")
-async def metrics_middleware(request: Request, call_next):
-    start_time = time.time()
-    
-    response = await call_next(request)
-    
-    # Record metrics
-    duration = time.time() - start_time
-    api_requests_total.labels(
-        method=request.method,
-        endpoint=request.url.path,
-        status=response.status_code
-    ).inc()
-    
-    api_response_time.labels(
-        endpoint=request.url.path
-    ).observe(duration)
-    
-    return response
 
 
 def custom_openapi():
@@ -165,7 +138,7 @@ async def root():
 
 @app.get("/health", tags=["System"])
 async def health():
-    metrics = {
+    metrics_data = {
         "status": "healthy",
         "service": "zeotap-ims-backend",
         "version": "2.0.0",
@@ -174,14 +147,14 @@ async def health():
 
     if signal_processor:
         buffer_size = len(signal_processor.signal_buffer)
-        metrics.update({
+        metrics_data.update({
             "throughput": signal_processor.signal_counter["count"],
             "buffer_size": buffer_size,
             "buffer_capacity": 100000,
             "utilization_percent": round((buffer_size / 100000) * 100, 2)
         })
 
-    return metrics
+    return metrics_data
 
 
 @app.get("/metrics", tags=["Monitoring"], include_in_schema=False)
@@ -191,7 +164,8 @@ async def metrics():
     
     Returns metrics in Prometheus exposition format.
     """
-    return metrics_endpoint()
+    from .metrics import get_metrics
+    return get_metrics()
 
 
 if __name__ == "__main__":
