@@ -1,6 +1,4 @@
-cd ~/zeotap-ims
 
-cat > README.md << 'FINALREADME'
 # 🚨 Zeotap IMS - Incident Management System
 
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.109.0-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
@@ -269,11 +267,11 @@ zeotap-ims/
 
 ## 👨‍💻 Author
 
-**Your Name**  
-Zeotap Infrastructure/SRE Intern Assignment 2026
+**Afreen Ansari**  
+© 2026 Infrastructure Monitoring Platform 
 
-- GitHub: [@YOUR_USERNAME](https://github.com/YOUR_USERNAME)
-- Email: your.email@example.com
+- GitHub: (https://github.com/afreenans)
+- Email: afreenansari3107@gmail.com
 
 ---
 
@@ -296,13 +294,7 @@ MIT License
 
 **⭐ Star this repository if you find it helpful!**
 
-Built with ❤️ for Zeotap
+Built with ❤️ for 
 
 </div>
 FINALREADME
-
-echo ""
-echo "✅ README.md created successfully!"
-echo ""
-echo "Verify with:"
-echo "cat README.md | head -20"
